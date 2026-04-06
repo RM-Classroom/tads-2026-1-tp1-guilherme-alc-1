@@ -16,7 +16,7 @@ namespace TP1_TADS
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
+            builder.Services.AddDbContext<ApplicationContext>(options =>
                 options.UseSqlServer(connectionString)
             );
 

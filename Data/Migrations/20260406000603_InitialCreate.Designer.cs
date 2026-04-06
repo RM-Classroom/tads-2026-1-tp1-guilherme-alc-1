@@ -11,7 +11,7 @@ using TP1_TADS.Data;
 
 namespace TP1_TADS.Data.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
+    [DbContext(typeof(ApplicationContext))]
     [Migration("20260406000603_InitialCreate")]
     partial class InitialCreate
     {
