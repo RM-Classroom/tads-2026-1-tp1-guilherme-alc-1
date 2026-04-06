@@ -8,8 +8,8 @@ namespace TP1_TADS.Entities
         public DateTime DataInicio { get; set; }
         public DateTime DataTermino { get; set; }
         public DateTime DataCriacao { get; set; }
-        public decimal QuilometragemIncial { get; set; }
-        public decimal QuilometragemFinal { get; set; }
+        public int QuilometragemInicial { get; set; }
+        public int? QuilometragemFinal { get; set; }
         public decimal ValorDiaria { get; set; }
         public int QuantidadeDiarias { get; set; }
         public decimal ValorTotal => QuantidadeDiarias > 0

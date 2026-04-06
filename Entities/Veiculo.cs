@@ -7,9 +7,9 @@ namespace TP1_TADS.Entities
         public Guid Id { get; set; }
         public string Modelo { get; set; } = string.Empty;
         public int Ano { get; set; }
-        public decimal Quilometragem { get; set; }
+        public int Quilometragem { get; set; }
         public string Placa { get; set; } = string.Empty;
-        public string Cor { get; set; } = string.Empty;
+        public string? Cor { get; set; } = string.Empty;
         public TipoCombustivel Combustivel { get; set; }
         public bool Disponivel { get; set; }
 
