@@ -12,7 +12,7 @@ using TP1_TADS.Data;
 namespace TP1_TADS.Data.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20260406000603_InitialCreate")]
+    [Migration("20260407000731_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -27,12 +27,14 @@ namespace TP1_TADS.Data.Migrations
 
             modelBuilder.Entity("TP1_TADS.Entities.Aluguel", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint");
 
-                    b.Property<Guid>("ClienteId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ClienteId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("datetime2");
@@ -63,8 +65,8 @@ namespace TP1_TADS.Data.Migrations
                     b.Property<decimal>("ValorDiaria")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("VeiculoId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("VeiculoId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -77,9 +79,11 @@ namespace TP1_TADS.Data.Migrations
 
             modelBuilder.Entity("TP1_TADS.Entities.Cliente", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("CPF")
                         .IsRequired()
@@ -102,14 +106,19 @@ namespace TP1_TADS.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CPF")
+                        .IsUnique();
+
                     b.ToTable("Clientes");
                 });
 
             modelBuilder.Entity("TP1_TADS.Entities.Fabricante", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -123,17 +132,19 @@ namespace TP1_TADS.Data.Migrations
 
             modelBuilder.Entity("TP1_TADS.Entities.Pagamento", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint");
 
-                    b.Property<Guid>("AluguelId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("AluguelId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DataPagamento")
+                    b.Property<DateTime?>("DataPagamento")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FormaPagamento")
@@ -157,9 +168,11 @@ namespace TP1_TADS.Data.Migrations
 
             modelBuilder.Entity("TP1_TADS.Entities.Veiculo", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Ano")
                         .HasColumnType("int");
@@ -176,8 +189,8 @@ namespace TP1_TADS.Data.Migrations
                     b.Property<bool>("Disponivel")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("FabricanteId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("FabricanteId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Modelo")
                         .IsRequired()

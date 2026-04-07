@@ -15,7 +15,8 @@ namespace TP1_TADS.Data.Migrations
                 name: "Clientes",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Nome = table.Column<string>(type: "nvarchar(180)", maxLength: 180, nullable: false),
                     CPF = table.Column<string>(type: "nvarchar(14)", maxLength: 14, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
@@ -30,7 +31,8 @@ namespace TP1_TADS.Data.Migrations
                 name: "Fabricantes",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Nome = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
@@ -42,7 +44,8 @@ namespace TP1_TADS.Data.Migrations
                 name: "Veiculos",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Modelo = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Ano = table.Column<int>(type: "int", nullable: false),
                     Quilometragem = table.Column<int>(type: "int", nullable: false),
@@ -50,7 +53,7 @@ namespace TP1_TADS.Data.Migrations
                     Cor = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
                     Combustivel = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Disponivel = table.Column<bool>(type: "bit", nullable: false),
-                    FabricanteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    FabricanteId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -67,7 +70,8 @@ namespace TP1_TADS.Data.Migrations
                 name: "Alugueis",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     DataInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataTermino = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -77,8 +81,8 @@ namespace TP1_TADS.Data.Migrations
                     QuantidadeDiarias = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Observacoes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ClienteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VeiculoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    ClienteId = table.Column<long>(type: "bigint", nullable: false),
+                    VeiculoId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -101,13 +105,14 @@ namespace TP1_TADS.Data.Migrations
                 name: "Pagamentos",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Valor = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DataPagamento = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DataPagamento = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FormaPagamento = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AluguelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    AluguelId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -129,6 +134,12 @@ namespace TP1_TADS.Data.Migrations
                 name: "IX_Alugueis_VeiculoId",
                 table: "Alugueis",
                 column: "VeiculoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Clientes_CPF",
+                table: "Clientes",
+                column: "CPF",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pagamentos_AluguelId",
