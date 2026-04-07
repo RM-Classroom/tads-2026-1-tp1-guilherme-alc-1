@@ -4,7 +4,7 @@ namespace TP1_TADS.Entities
 {
     public class Aluguel
     {
-        public Guid Id { get; set; }
+        public long Id { get; set; }
         public DateTime DataInicio { get; set; }
         public DateTime DataTermino { get; set; }
         public DateTime DataCriacao { get; set; }
@@ -19,8 +19,8 @@ namespace TP1_TADS.Entities
         public StatusAluguel Status { get; set; }
         public string? Observacoes { get; set; }
 
-        public Guid ClienteId { get; set; }
-        public Guid VeiculoId { get; set; }
+        public long ClienteId { get; set; }
+        public long VeiculoId { get; set; }
 
         public Cliente Cliente { get; set; } = null!;
         public Veiculo Veiculo { get; set; } = null!;
