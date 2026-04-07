@@ -22,6 +22,9 @@ namespace TP1_TADS.Data
             {
                 entity.HasKey(v => v.Id);
 
+                entity.Property(v => v.Id)
+                    .ValueGeneratedOnAdd();
+
                 entity.Property(v => v.Modelo)
                     .IsRequired()
                     .HasMaxLength(100);
@@ -37,7 +40,8 @@ namespace TP1_TADS.Data
                     .IsRequired(false);
 
                 entity.Property(v => v.Placa)
-                    .HasMaxLength(7);
+                    .HasMaxLength(7)
+                    .IsRequired();
 
                 entity.Property(v => v.Combustivel)
                     .HasConversion<string>()
@@ -56,6 +60,9 @@ namespace TP1_TADS.Data
             {
                 entity.HasKey(f => f.Id);
 
+                entity.Property(f => f.Id)
+                    .ValueGeneratedOnAdd();
+
                 entity.Property(f => f.Nome)
                     .IsRequired()
                     .HasMaxLength(100);
@@ -64,6 +71,9 @@ namespace TP1_TADS.Data
             modelBuilder.Entity<Cliente>(entity =>
             {
                 entity.HasKey(c => c.Id);
+
+                entity.Property(c => c.Id)
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(c => c.Nome)
                     .IsRequired()
@@ -74,18 +84,23 @@ namespace TP1_TADS.Data
                     .HasMaxLength(14);
 
                 entity.Property(c => c.Email)
-                    .IsRequired()
                     .HasMaxLength(255)
                     .IsRequired(false);
 
                 entity.Property(c => c.Telefone)
                     .HasMaxLength(20)
                     .IsRequired();
+
+                entity.HasIndex(c => c.CPF)
+                    .IsUnique();
             });
 
             modelBuilder.Entity<Aluguel>(entity =>
             {
                 entity.HasKey(a => a.Id);
+
+                entity.Property(a => a.Id)
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(a => a.DataInicio)
                     .IsRequired();
@@ -133,11 +148,12 @@ namespace TP1_TADS.Data
             {
                 entity.HasKey(p => p.Id);
 
+                entity.Property(p => p.Id)
+                    .ValueGeneratedOnAdd();
+
                 entity.Property(p => p.Valor)
                     .IsRequired()
                     .HasColumnType("decimal(18,2)");
-
-                entity.Property(p => p.DataPagamento);
 
                 entity.Property(p => p.DataCriacao)
                     .IsRequired();
@@ -147,7 +163,8 @@ namespace TP1_TADS.Data
                     .HasConversion<string>();
 
                 entity.Property(p => p.FormaPagamento)
-                    .HasConversion<string>();
+                    .HasConversion<string>()
+                    .IsRequired();
 
                 entity.HasOne(p => p.Aluguel)
                     .WithOne(a => a.Pagamento)
