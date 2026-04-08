@@ -43,6 +43,9 @@ namespace TP1_TADS.Data
                     .HasMaxLength(7)
                     .IsRequired();
 
+                entity.Property(v => v.Disponivel)
+                    .IsRequired();
+
                 entity.Property(v => v.Combustivel)
                     .HasConversion<string>()
                      .HasMaxLength(20);
