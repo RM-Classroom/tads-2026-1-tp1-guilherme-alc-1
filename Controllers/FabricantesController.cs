@@ -22,14 +22,15 @@ namespace TP1_TADS.Controllers
             try
             {
                 var fabricantes = await _context.Fabricantes
+                    .AsNoTracking()
                     .Select(f => new FabricanteResponseDTO(f.Id, f.Nome))
                     .ToListAsync();
 
                 return Ok(fabricantes);
             }
-            catch (Exception) 
+            catch (Exception ex) 
             {
-                return StatusCode(500, "Ocorreu um erro interno ao obter os fabricantes.");
+                return StatusCode(500, "Ocorreu um erro interno ao obter os fabricantes." + Environment.NewLine + ex);
             }
         }
 
@@ -39,6 +40,7 @@ namespace TP1_TADS.Controllers
             try
             {
                 var fabricante = await _context.Fabricantes
+                    .AsNoTracking()
                     .Where(f => f.Id == id)
                     .Select(f => new FabricanteResponseDTO(f.Id, f.Nome))
                     .FirstOrDefaultAsync();
@@ -48,9 +50,9 @@ namespace TP1_TADS.Controllers
 
                 return Ok(fabricante);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao obter o fabricante.");
+                return StatusCode(500, "Ocorreu um erro interno ao obter o fabricante." + Environment.NewLine + ex);
             }
         }
 
@@ -82,9 +84,9 @@ namespace TP1_TADS.Controllers
                 return CreatedAtAction("GetById", new { id = fabricante.Id }, response);
             
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao cadastrar o fabricante.");
+                return StatusCode(500, "Ocorreu um erro interno ao cadastrar o fabricante." + Environment.NewLine + ex);
             }
         }
 
@@ -104,9 +106,9 @@ namespace TP1_TADS.Controllers
 
                 return NoContent();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao atualizar o fabricante.");
+                return StatusCode(500, "Ocorreu um erro interno ao atualizar o fabricante." + Environment.NewLine + ex);
             }
         }
 
@@ -125,9 +127,9 @@ namespace TP1_TADS.Controllers
 
                 return NoContent();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao remover o fabricante.");
+                return StatusCode(500, "Ocorreu um erro interno ao remover o fabricante." + Environment.NewLine + ex);
             }
         }
     }
