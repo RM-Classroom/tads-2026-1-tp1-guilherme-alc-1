@@ -1,0 +1,200 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections;
+using TP1_TADS.Data;
+using TP1_TADS.DTOs;
+using TP1_TADS.Entities;
+using TP1_TADS.Enums;
+
+namespace TP1_TADS.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class VeiculosController : ControllerBase
+    {
+        private readonly ApplicationContext _context;
+        public VeiculosController(ApplicationContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<VeiculoResponseDTO>>> GetAsync()
+        {
+            try
+            {
+                var veiculos = await _context.Veiculos
+                .AsNoTracking()
+                .Select(v => new VeiculoResponseDTO(
+                    v.Id,
+                    v.Modelo,
+                    v.Ano,
+                    v.Quilometragem,
+                    v.Placa,
+                    v.Cor,
+                    v.Combustivel,
+                    v.Disponivel,
+                    new FabricanteResponseDTO(v.Fabricante.Id, v.Fabricante.Nome)
+                ))
+                .ToListAsync();
+                return Ok(veiculos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocorreu um erro interno ao obter os veiculos." + Environment.NewLine + ex);
+            }
+        }
+
+        [HttpGet("{id:long}")]
+        public async Task<ActionResult<VeiculoResponseDTO>> GetByIdAsync(long id)
+        {
+            try
+            {
+                var veiculo = await _context.Veiculos
+                    .AsNoTracking()
+                    .Where(v => v.Id == id)
+                    .Select(v => new VeiculoResponseDTO(
+                        v.Id,
+                        v.Modelo,
+                        v.Ano,
+                        v.Quilometragem,
+                        v.Placa,
+                        v.Cor,
+                        v.Combustivel,
+                        v.Disponivel,
+                        new FabricanteResponseDTO(v.Fabricante.Id, v.Fabricante.Nome)
+                    ))
+                    .FirstOrDefaultAsync();
+
+                if (veiculo == null)
+                    return NotFound($"Não foi encontrado veículo com id {id} cadastrado");
+
+                return Ok(veiculo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocorreu um erro interno ao obter o veículo." + Environment.NewLine + ex);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<VeiculoResponseDTO>> CreateAsync([FromBody] VeiculoRequestDTO request)
+        {
+            try
+            {
+                var placa = request.Placa.Trim().ToUpper();
+                var placaExists = await _context.Veiculos.AnyAsync(v => v.Placa == placa);
+                if(placaExists)
+                    return BadRequest($"Já existe um veículo cadastrado com a placa {request.Placa}");
+
+                var fabricante = await _context.Fabricantes.FindAsync(request.FabricanteId);
+                if (fabricante == null)
+                    return NotFound($"Não foi encontrado fabricante com id {request.FabricanteId} cadastrado");
+
+                if (!Enum.IsDefined(typeof(TipoCombustivel), request.Combustivel))
+                {
+                    return BadRequest("Tipo de combustível inválido");
+                }
+
+                var veiculo = new Veiculo
+                {
+                    Modelo = request.Modelo,
+                    Ano = request.Ano,
+                    Quilometragem = request.Quilometragem,
+                    Placa = request.Placa.ToUpper().Trim(),
+                    Cor = request.Cor,
+                    Combustivel = request.Combustivel,
+                    Disponivel = request.Disponivel,
+                    FabricanteId = fabricante.Id,
+                    Fabricante = fabricante
+                };
+
+                _context.Veiculos.Add(veiculo);
+                await _context.SaveChangesAsync();
+
+                var response = new VeiculoResponseDTO(
+                    veiculo.Id,
+                    veiculo.Modelo,
+                    veiculo.Ano,
+                    veiculo.Quilometragem,
+                    veiculo.Placa,
+                    veiculo.Cor,
+                    veiculo.Combustivel,
+                    veiculo.Disponivel,
+                    new FabricanteResponseDTO(fabricante.Id, fabricante.Nome)
+                );
+
+                return CreatedAtAction("GetById", new { id = veiculo.Id }, response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocorreu um erro interno ao criar o veículo." + Environment.NewLine + ex);
+            }
+        }
+
+        [HttpPut("{id:long}")]
+        public async Task<IActionResult> UpdateAsync(long id, [FromBody] VeiculoRequestDTO request)
+        {
+            try
+            {
+                var veiculo = await _context.Veiculos.FindAsync(id);
+                if (veiculo == null)
+                    return NotFound($"Não foi encontrado veículo com id {id} cadastrado");
+
+                var placa = request.Placa.Trim().ToUpper();
+                var placaExists = await _context.Veiculos.AnyAsync(v => v.Placa == placa && v.Id != id);
+                if (placaExists)
+                    return BadRequest($"Já existe um veículo cadastrado com a placa {request.Placa}");
+
+                var fabricante = await _context.Fabricantes.FindAsync(request.FabricanteId);
+                if (fabricante == null)
+                    return NotFound($"Não foi encontrado fabricante com id {request.FabricanteId} cadastrado");
+
+                if (!Enum.IsDefined(typeof(TipoCombustivel), request.Combustivel))
+                {
+                    return BadRequest("Tipo de combustível inválido");
+                }
+
+                veiculo.Modelo = request.Modelo;
+                veiculo.Ano = request.Ano;
+                veiculo.Quilometragem = request.Quilometragem;
+                veiculo.Placa = request.Placa.ToUpper().Trim();
+                veiculo.Cor = request.Cor;
+                veiculo.Combustivel = request.Combustivel;
+                veiculo.Disponivel = request.Disponivel;
+                veiculo.FabricanteId = fabricante.Id;
+                veiculo.Fabricante = fabricante;
+
+                _context.Veiculos.Update(veiculo);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocorreu um erro interno ao atualizar o veículo." + Environment.NewLine + ex);
+            }
+        }
+
+        [HttpDelete("{id:long}")]
+        public async Task<ActionResult> DeleteAsync(long id)
+        {
+            try
+            {
+                var veiculo = await _context.Veiculos.FindAsync(id);
+
+                if (veiculo == null)
+                    return NotFound($"Não foi encontrado veículo com id {id} cadastrado");
+
+                _context.Veiculos.Remove(veiculo);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocorreu um erro interno ao excluir o veículo." + Environment.NewLine + ex);
+            }
+        }
+    }
+}
