@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections;
 using TP1_TADS.Data;
 using TP1_TADS.DTOs;
 using TP1_TADS.Entities;
@@ -13,9 +12,11 @@ namespace TP1_TADS.Controllers
     public class VeiculosController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        public VeiculosController(ApplicationContext context)
+        private readonly ILogger<VeiculosController> _logger;
+        public VeiculosController(ApplicationContext context, ILogger<VeiculosController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -41,7 +42,8 @@ namespace TP1_TADS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao obter os veiculos." + Environment.NewLine + ex);
+                _logger.LogError(ex, "Erro ao obter veículos.");
+                return StatusCode(500, "Ocorreu um erro interno ao obter os veiculos.");
             }
         }
 
@@ -73,7 +75,8 @@ namespace TP1_TADS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao obter o veículo." + Environment.NewLine + ex);
+                _logger.LogError(ex, "Erro ao obter veículo com id {Id}.", id);
+                return StatusCode(500, "Ocorreu um erro interno ao obter o veículo.");
             }
         }
 
@@ -85,7 +88,7 @@ namespace TP1_TADS.Controllers
                 var placa = request.Placa.Trim().ToUpper();
                 var placaExists = await _context.Veiculos.AnyAsync(v => v.Placa == placa);
                 if(placaExists)
-                    return BadRequest($"Já existe um veículo cadastrado com a placa {request.Placa}");
+                    return Conflict($"Já existe um veículo cadastrado com a placa {request.Placa}");
 
                 var fabricante = await _context.Fabricantes.FindAsync(request.FabricanteId);
                 if (fabricante == null)
@@ -128,7 +131,8 @@ namespace TP1_TADS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao criar o veículo." + Environment.NewLine + ex);
+                _logger.LogError(ex, "Erro ao criar veículo com placa {Placa}.", request.Placa);
+                return StatusCode(500, "Ocorreu um erro interno ao criar o veículo.");
             }
         }
 
@@ -144,7 +148,7 @@ namespace TP1_TADS.Controllers
                 var placa = request.Placa.Trim().ToUpper();
                 var placaExists = await _context.Veiculos.AnyAsync(v => v.Placa == placa && v.Id != id);
                 if (placaExists)
-                    return BadRequest($"Já existe um veículo cadastrado com a placa {request.Placa}");
+                    return Conflict($"Já existe um veículo cadastrado com a placa {request.Placa}");
 
                 var fabricante = await _context.Fabricantes.FindAsync(request.FabricanteId);
                 if (fabricante == null)
@@ -172,7 +176,8 @@ namespace TP1_TADS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao atualizar o veículo." + Environment.NewLine + ex);
+                _logger.LogError(ex, "Erro ao atualizar veículo com id {Id} e placa {Placa}.", id, request.Placa);
+                return StatusCode(500, "Ocorreu um erro interno ao atualizar o veículo.");
             }
         }
 
@@ -193,7 +198,8 @@ namespace TP1_TADS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao excluir o veículo." + Environment.NewLine + ex);
+                _logger.LogError(ex, "Erro ao excluir veículo com id {Id}.", id);
+                return StatusCode(500, "Ocorreu um erro interno ao excluir o veículo.");
             }
         }
     }

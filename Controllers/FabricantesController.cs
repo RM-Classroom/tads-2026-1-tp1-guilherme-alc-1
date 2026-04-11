@@ -11,9 +11,11 @@ namespace TP1_TADS.Controllers
     public class FabricantesController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        public FabricantesController(ApplicationContext context)
+        private readonly ILogger<FabricantesController> _logger;
+        public FabricantesController(ApplicationContext context, ILogger<FabricantesController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -30,7 +32,8 @@ namespace TP1_TADS.Controllers
             }
             catch (Exception ex) 
             {
-                return StatusCode(500, "Ocorreu um erro interno ao obter os fabricantes." + Environment.NewLine + ex);
+                _logger.LogError(ex, "Erro ao obter fabricantes.");
+                return StatusCode(500, "Ocorreu um erro interno ao obter os fabricantes.");
             }
         }
 
@@ -52,7 +55,8 @@ namespace TP1_TADS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao obter o fabricante." + Environment.NewLine + ex);
+                _logger.LogError(ex, "Erro ao obter fabricante com id {id}.", id);
+                return StatusCode(500, "Ocorreu um erro interno ao obter o fabricante.");
             }
         }
 
@@ -64,11 +68,11 @@ namespace TP1_TADS.Controllers
                 var nome = request.Nome.Trim().ToUpper();
 
                 var existeFabricante = await _context.Fabricantes
-                    .AnyAsync(f => f.Nome.ToUpper() == nome);
+                    .AnyAsync(f => f.Nome.ToUpper().Trim() == nome);
 
                 if (existeFabricante)
                 {
-                    return BadRequest("Já existe um fabricante com esse nome");
+                    return Conflict("Já existe um fabricante com esse nome");
                 }
 
                 var fabricante = new Fabricante
@@ -86,7 +90,8 @@ namespace TP1_TADS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao cadastrar o fabricante." + Environment.NewLine + ex);
+                _logger.LogError(ex, "Erro ao cadastrar fabricante com nome {Nome}.", request.Nome);
+                return StatusCode(500, "Ocorreu um erro interno ao cadastrar o fabricante.");
             }
         }
 
@@ -100,7 +105,16 @@ namespace TP1_TADS.Controllers
                 if(fabricante == null)
                     return NotFound($"Não foi encontrado fabricante com id {id} cadastrado");
 
-                fabricante.Nome = request.Nome;
+                var nome = request.Nome.Trim().ToUpper();
+                var existeFabricante = await _context.Fabricantes
+                    .AnyAsync(f => f.Nome.ToUpper().Trim() == nome && f.Id != id);
+
+                if (existeFabricante)
+                {
+                    return Conflict("Já existe um fabricante com esse nome");
+                }
+
+                fabricante.Nome = nome;
 
                 await _context.SaveChangesAsync();
 
@@ -108,7 +122,8 @@ namespace TP1_TADS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao atualizar o fabricante." + Environment.NewLine + ex);
+                _logger.LogError(ex, "Erro ao atualizar fabricante com id {Id} e nome {Nome}.", id, request.Nome);
+                return StatusCode(500, "Ocorreu um erro interno ao atualizar o fabricante.");
             }
         }
 
@@ -129,7 +144,8 @@ namespace TP1_TADS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Ocorreu um erro interno ao remover o fabricante." + Environment.NewLine + ex);
+                _logger.LogError(ex, "Erro ao remover fabricante com id {Id}.", id);
+                return StatusCode(500, "Ocorreu um erro interno ao remover o fabricante.");
             }
         }
     }
