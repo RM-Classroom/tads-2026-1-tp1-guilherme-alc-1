@@ -5,20 +5,27 @@ namespace TP1_TADS.DTOs
 {
     public record VeiculoRequestDTO(
         [Required(ErrorMessage = "O modelo é obrigatório")]
-        [StringLength(100, MinimumLength = 2, ErrorMessage = "O modelo deve ter entre 2 até 100 caracteres.")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "O modelo deve ter entre 2 e 100 caracteres.")]
         string Modelo,
-        [Required(ErrorMessage = "O ano é obrigatório")]
+
+        [Range(1900, 2100, ErrorMessage = "Ano inválido")]
         int Ano,
-        [Required(ErrorMessage = "A quilometragem é obrigatória")]
+
+        [Range(0, int.MaxValue, ErrorMessage = "A quilometragem deve ser maior ou igual a zero")]
         int Quilometragem,
+
         [Required(ErrorMessage = "A placa é obrigatória")]
-        [StringLength(7, MinimumLength = 7, ErrorMessage = "A placa deve conter 7 caracteres.")]
+        [RegularExpression(@"^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$", ErrorMessage = "Placa inválida")]
         string Placa,
+
         [StringLength(40, ErrorMessage = "A cor deve conter no máximo 40 caracteres.")]
         string? Cor,
-        [Required(ErrorMessage = "O tipo de combustível é obrigatório")]
+
         TipoCombustivel Combustivel,
+
         bool Disponivel,
-        [Required(ErrorMessage = "O fabricante é obrigatório")]
-        long FabricanteId);
+
+        [Range(1, long.MaxValue, ErrorMessage = "FabricanteId deve ser válido")]
+        long FabricanteId
+    );
 }
