@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TP1_TADS.Data;
-using TP1_TADS.Entities;
 using TP1_TADS.DTOs;
+using TP1_TADS.Entities;
 
 namespace TP1_TADS.Controllers
 {
@@ -49,7 +49,7 @@ namespace TP1_TADS.Controllers
                     .FirstOrDefaultAsync();
 
                 if (fabricante == null)
-                    return NotFound($"Não foi encontrado fabricante com id {id} cadastrado");
+                    return NotFound($"Não foi encontrado o fabricante informado.");
 
                 return Ok(fabricante);
             }
@@ -72,7 +72,7 @@ namespace TP1_TADS.Controllers
 
                 if (existeFabricante)
                 {
-                    return Conflict("Já existe um fabricante com esse nome");
+                    return Conflict("Já existe um fabricante com esse nome.");
                 }
 
                 var fabricante = new Fabricante
@@ -103,7 +103,7 @@ namespace TP1_TADS.Controllers
                 var fabricante = await _context.Fabricantes.FindAsync(id);
 
                 if(fabricante == null)
-                    return NotFound($"Não foi encontrado fabricante com id {id} cadastrado");
+                    return NotFound($"Não foi encontrado o fabricante informado.");
 
                 var nome = request.Nome.Trim().ToUpper();
                 var existeFabricante = await _context.Fabricantes
@@ -111,7 +111,7 @@ namespace TP1_TADS.Controllers
 
                 if (existeFabricante)
                 {
-                    return Conflict("Já existe um fabricante com esse nome");
+                    return Conflict("Já existe um fabricante com esse nome.");
                 }
 
                 fabricante.Nome = nome;
@@ -135,7 +135,7 @@ namespace TP1_TADS.Controllers
                 var fabricante = await _context.Fabricantes.FindAsync(id);
 
                 if (fabricante == null)
-                    return NotFound($"Não foi encontrado fabricante com id {id} cadastrado");
+                    return NotFound($"Não foi encontrado o fabricante informado.");
 
                 _context.Fabricantes.Remove(fabricante); 
                 await _context.SaveChangesAsync();

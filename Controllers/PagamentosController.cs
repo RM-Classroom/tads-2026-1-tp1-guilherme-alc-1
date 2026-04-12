@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TP1_TADS.Data;
 using TP1_TADS.DTOs;
 using TP1_TADS.Entities;
+using TP1_TADS.Enums;
 
 namespace TP1_TADS.Controllers
 {
@@ -20,7 +21,7 @@ namespace TP1_TADS.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagamentoResponseDTO>> GetAsync()
+        public async Task<ActionResult<IEnumerable<PagamentoResponseDTO>>> GetAsync()
         {
             try
             {
@@ -69,30 +70,56 @@ namespace TP1_TADS.Controllers
                     .FirstOrDefaultAsync();
 
                 if (pagamento == null)
-                    return NotFound($"Pagamento com Id {id} não encontrado.");
+                    return NotFound($"Pagamento não encontrado.");
 
                 return Ok(pagamento);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao obter pagamento por ID.");
-                return StatusCode(500, "Ocorreu um erro interno ao obter o pagamento por ID.");
+                _logger.LogError(ex, "Erro ao obter pagamento de Id {id}.", id);
+                return StatusCode(500, "Ocorreu um erro interno ao obter o pagamento.");
             }
         }
 
         [HttpPost]
-        public async Task<ActionResult<PagamentoResponseDTO>> CreateAsync(PagamentoRequestDTO request)
+        public async Task<ActionResult<PagamentoResponseDTO>> CreateAsync([FromBody] PagamentoRequestDTO request)
         {
             try
             {
                 var aluguel = await _context.Alugueis.FindAsync(request.AluguelId);
                 if (aluguel == null)
-                    return BadRequest($"Aluguel com Id {request.AluguelId} não encontrado.");
+                    return BadRequest($"Aluguel não encontrado.");
+
+                var pagamentoExiste = await _context.Pagamentos
+                    .AnyAsync(p => p.AluguelId == request.AluguelId);
+
+                if (pagamentoExiste)
+                    return BadRequest("Já existe pagamento associado a este aluguel.");
+
+                if (!Enum.IsDefined(typeof(FormaPagamento), request.FormaPagamento))
+                {
+                    return BadRequest("Forma de pagamento inválida.");
+                }
+
+                if (!Enum.IsDefined(typeof(StatusPagamento), request.Status))
+                {
+                    return BadRequest("Status do pagamento informado é inválido.");
+                }
+
+                if (request.Status == StatusPagamento.Pago && request.DataPagamento == null)
+                    return BadRequest("Pagamento com status Pago deve informar DataPagamento.");
+
+                if (request.Status != StatusPagamento.Pago && request.DataPagamento != null)
+                    return BadRequest("Somente pagamentos concluídos devem informar DataPagamento.");
+
+                if (request.Valor <= 0)
+                    return BadRequest("O valor do pagamento deve ser maior que zero.");
 
                 var pagamento = new Pagamento
                 {
                     Valor = request.Valor,
                     DataPagamento = request.DataPagamento,
+                    DataCriacao = DateTime.UtcNow,
                     Status = request.Status,
                     FormaPagamento = request.FormaPagamento,
                     AluguelId = request.AluguelId,
@@ -127,11 +154,36 @@ namespace TP1_TADS.Controllers
             {
                 var pagamento = await _context.Pagamentos.FindAsync(id);
                 if (pagamento == null)
-                    return NotFound("Pagamento não encontrado");
+                    return NotFound("Pagamento não encontrado.");
 
                 var aluguel = await _context.Alugueis.FindAsync(request.AluguelId);
                 if (aluguel == null)
-                    return BadRequest($"Aluguel com Id {request.AluguelId} não encontrado.");
+                    return BadRequest($"Aluguel não encontrado.");
+
+                var pagamentoExiste = await _context.Pagamentos
+                    .AnyAsync(p => p.AluguelId == request.AluguelId && p.Id != id);
+
+                if (pagamentoExiste)
+                    return BadRequest("Já existe pagamento associado a este aluguel.");
+
+                if (!Enum.IsDefined(typeof(FormaPagamento), request.FormaPagamento))
+                {
+                    return BadRequest("Forma de pagamento inválida.");
+                }
+
+                if (!Enum.IsDefined(typeof(StatusPagamento), request.Status))
+                {
+                    return BadRequest("Status do pagamento informado é inválido.");
+                }
+
+                if (request.Status == StatusPagamento.Pago && request.DataPagamento == null)
+                    return BadRequest("Pagamento com status Pago deve informar DataPagamento.");
+
+                if (request.Status != StatusPagamento.Pago && request.DataPagamento != null)
+                    return BadRequest("Somente pagamentos concluídos devem informar DataPagamento.");
+
+                if (request.Valor <= 0)
+                    return BadRequest("O valor do pagamento deve ser maior que zero.");
 
                 pagamento.Valor = request.Valor;
                 pagamento.DataPagamento = request.DataPagamento;
@@ -147,7 +199,7 @@ namespace TP1_TADS.Controllers
             catch(Exception ex)
             {
                 _logger.LogError(ex, "Erro ao atualizar pagamento de Id {id}", id);
-                return StatusCode(500, "Ocorreu um erro interno ao atualizar o pagamento");
+                return StatusCode(500, "Ocorreu um erro interno ao atualizar o pagamento.");
             }
         }
 
@@ -158,7 +210,7 @@ namespace TP1_TADS.Controllers
             {
                 var pagamento = await _context.Pagamentos.FindAsync(id);
                 if (pagamento == null)
-                    return NotFound("Pagamento não encontrado");
+                    return NotFound("Pagamento não encontrado.");
 
                 _context.Pagamentos.Remove(pagamento);
                 await _context.SaveChangesAsync();
@@ -168,7 +220,7 @@ namespace TP1_TADS.Controllers
             catch(Exception ex)
             {
                 _logger.LogError(ex, "Erro ao remover pagamento de Id {id}", id);
-                return StatusCode(500, "Ocorreu um erro interno ao remover o pagamento");
+                return StatusCode(500, "Ocorreu um erro interno ao remover o pagamento.");
             }
         }
     }

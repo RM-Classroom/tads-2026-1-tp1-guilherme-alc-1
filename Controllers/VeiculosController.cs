@@ -69,7 +69,7 @@ namespace TP1_TADS.Controllers
                     .FirstOrDefaultAsync();
 
                 if (veiculo == null)
-                    return NotFound($"Não foi encontrado veículo com id {id} cadastrado");
+                    return NotFound($"Não foi encontrado o veículo informado.");
 
                 return Ok(veiculo);
             }
@@ -88,15 +88,15 @@ namespace TP1_TADS.Controllers
                 var placa = request.Placa.Trim().ToUpper();
                 var placaExists = await _context.Veiculos.AnyAsync(v => v.Placa == placa);
                 if(placaExists)
-                    return Conflict($"Já existe um veículo cadastrado com a placa {request.Placa}");
+                    return Conflict($"Já existe um veículo cadastrado com a placa {request.Placa}.");
 
                 var fabricante = await _context.Fabricantes.FindAsync(request.FabricanteId);
                 if (fabricante == null)
-                    return NotFound($"Não foi encontrado fabricante com id {request.FabricanteId} cadastrado");
+                    return NotFound($"Não foi possível encontrar o cadastro do fabricante informado.");
 
                 if (!Enum.IsDefined(typeof(TipoCombustivel), request.Combustivel))
                 {
-                    return BadRequest("Tipo de combustível inválido");
+                    return BadRequest("Tipo de combustível inválido.");
                 }
 
                 var veiculo = new Veiculo
@@ -143,20 +143,20 @@ namespace TP1_TADS.Controllers
             {
                 var veiculo = await _context.Veiculos.FindAsync(id);
                 if (veiculo == null)
-                    return NotFound($"Não foi encontrado veículo com id {id} cadastrado");
+                    return NotFound($"Não foi encontrado o veículo informado.");
 
                 var placa = request.Placa.Trim().ToUpper();
                 var placaExists = await _context.Veiculos.AnyAsync(v => v.Placa == placa && v.Id != id);
                 if (placaExists)
-                    return Conflict($"Já existe um veículo cadastrado com a placa {request.Placa}");
+                    return Conflict($"Já existe um veículo cadastrado com a placa {request.Placa}.");
 
                 var fabricante = await _context.Fabricantes.FindAsync(request.FabricanteId);
                 if (fabricante == null)
-                    return NotFound($"Não foi encontrado fabricante com id {request.FabricanteId} cadastrado");
+                    return NotFound($"Não foi encontrado o cadastro do fabricante informado.");
 
                 if (!Enum.IsDefined(typeof(TipoCombustivel), request.Combustivel))
                 {
-                    return BadRequest("Tipo de combustível inválido");
+                    return BadRequest("Tipo de combustível inválido.");
                 }
 
                 veiculo.Modelo = request.Modelo;
@@ -189,7 +189,7 @@ namespace TP1_TADS.Controllers
                 var veiculo = await _context.Veiculos.FindAsync(id);
 
                 if (veiculo == null)
-                    return NotFound($"Não foi encontrado veículo com id {id} cadastrado");
+                    return NotFound($"Não foi encontrado o cadastro do veículo informado.");
 
                 _context.Veiculos.Remove(veiculo);
                 await _context.SaveChangesAsync();
