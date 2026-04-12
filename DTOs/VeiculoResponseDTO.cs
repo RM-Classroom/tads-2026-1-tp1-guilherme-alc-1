@@ -11,5 +11,5 @@ namespace TP1_TADS.DTOs
         string? Cor,
         TipoCombustivel Combustivel,
         bool Disponivel,
-        FabricanteResponseDTO Fabricante);
+        FabricanteResponseDTO? Fabricante);
 }

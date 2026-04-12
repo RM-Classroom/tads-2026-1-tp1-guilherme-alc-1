@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TP1_TADS.Data;
 using TP1_TADS.DTOs;
 using TP1_TADS.Entities;
+using TP1_TADS.Enums;
 
 namespace TP1_TADS.Controllers
 {
@@ -87,6 +88,147 @@ namespace TP1_TADS.Controllers
             {
                 _logger.LogError(ex, "Erro ao obter aluguel de Id {id}.", id);
                 return StatusCode(500, "Ocorreu um erro interno ao obter o aluguel");
+            }
+        }
+
+        [HttpGet]
+        [Route("por-cliente/{id:long}")]
+        public async Task<ActionResult<IEnumerable<AlugueisPorClienteResponseDTO>>> GetByClienteAsync(long id)
+        {
+            try
+            {
+                var cliente = await _context.Clientes.FindAsync(id);
+                if (cliente == null)
+                    return BadRequest("O cliente informado não foi encontado.");
+
+                var alugueis = await _context.Alugueis
+                    .AsNoTracking()
+                    .Where(a => a.ClienteId == id)
+                    .Select(a => new AlugueisPorClienteResponseDTO
+                        (
+                            a.Id,
+                            a.DataInicio,
+                            a.DataTermino,
+                            a.QuilometragemInicial,
+                            a.QuilometragemFinal,
+                            a.ValorDiaria,
+                            a.QuantidadeDiarias,
+                            a.ValorTotal,
+                            a.Status,
+                            a.Observacoes,
+                            new VeiculoResponseDTO(
+                                a.Veiculo.Id,
+                                a.Veiculo.Modelo,
+                                a.Veiculo.Ano,
+                                a.Veiculo.Quilometragem,
+                                a.Veiculo.Placa,
+                                a.Veiculo.Cor,
+                                a.Veiculo.Combustivel,
+                                a.Veiculo.Disponivel,
+                                null
+                            ),
+                            new ClienteResponseDTO(
+                                a.Cliente.Id,
+                                a.Cliente.Nome,
+                                a.Cliente.CPF,
+                                a.Cliente.Email,
+                                a.Cliente.Telefone
+                            )
+                        )
+                    )
+                    .ToListAsync();
+
+                return Ok(alugueis);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter alugueis do cliente de Id {id}.", id);
+                return StatusCode(500, "Ocorreu um erro interno ao obter os alugueis");
+            }
+        }
+
+        [HttpGet("por-status")]
+        public async Task<ActionResult<IEnumerable<AlugueisPorClienteResponseDTO>>> GetByStatusAsync([FromQuery] StatusAluguel status)
+        {
+            try
+            {
+                if (!Enum.IsDefined(typeof(StatusAluguel), status))
+                    return BadRequest("Status do aluguel inválido.");
+
+                var alugueis = await _context.Alugueis
+                    .AsNoTracking()
+                    .Where(a => a.Status == status)
+                    .Select(a => new AlugueisPorClienteResponseDTO(
+                        a.Id,
+                        a.DataInicio,
+                        a.DataTermino,
+                        a.QuilometragemInicial,
+                        a.QuilometragemFinal,
+                        a.ValorDiaria,
+                        a.QuantidadeDiarias,
+                        a.ValorTotal,
+                        a.Status,
+                        a.Observacoes,
+                        new VeiculoResponseDTO(
+                            a.Veiculo.Id,
+                            a.Veiculo.Modelo,
+                            a.Veiculo.Ano,
+                            a.Veiculo.Quilometragem,
+                            a.Veiculo.Placa,
+                            a.Veiculo.Cor,
+                            a.Veiculo.Combustivel,
+                            a.Veiculo.Disponivel,
+                            null
+                        ),
+                        new ClienteResponseDTO(
+                            a.Cliente.Id,
+                            a.Cliente.Nome,
+                            a.Cliente.CPF,
+                            a.Cliente.Email,
+                            a.Cliente.Telefone
+                        )
+                    ))
+                    .ToListAsync();
+
+                return Ok(alugueis);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter alugueis com status {status}.", status);
+                return StatusCode(500, "Ocorreu um erro interno ao obter os alugueis.");
+            }
+        }
+
+        [HttpGet("relatorio")]
+        public async Task<ActionResult<IEnumerable<AluguelRelatorioResponseDTO>>> GetRelatorioAsync()
+        {
+            try
+            {
+                var relatorio = await _context.Alugueis
+                    .AsNoTracking()
+                    .Select(a => new AluguelRelatorioResponseDTO(
+                        a.Id,
+                        a.DataInicio,
+                        a.DataTermino,
+                        a.ValorDiaria,
+                        a.QuantidadeDiarias,
+                        a.ValorTotal,
+                        a.Cliente.Nome,
+                        a.Veiculo.Modelo,
+                        a.Veiculo.Placa,
+                        a.Pagamento != null ? a.Pagamento.FormaPagamento.ToString() : null,
+                        a.Pagamento != null ? a.Pagamento.Valor : null,
+                        a.Pagamento != null ? a.Pagamento.DataPagamento : null,
+                        a.Pagamento != null ? a.Pagamento.Status.ToString() : null
+                    ))
+                    .ToListAsync();
+
+                return Ok(relatorio);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter relatório de aluguéis.");
+                return StatusCode(500, "Ocorreu um erro interno ao obter o relatório de aluguéis.");
             }
         }
 

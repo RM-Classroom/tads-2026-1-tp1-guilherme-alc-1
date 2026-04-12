@@ -81,6 +81,38 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        [HttpGet("por-forma")]
+        public async Task<ActionResult<IEnumerable<PagamentosPorFormaResponseDTO>>> GetByFormaAsync([FromQuery] FormaPagamento forma)
+        {
+            try
+            {
+                if (!Enum.IsDefined(typeof(FormaPagamento), forma))
+                    return BadRequest("Forma de pagamento inválida.");
+
+                var pagamentos = await _context.Pagamentos
+                    .AsNoTracking()
+                    .Where(p => p.FormaPagamento == forma)
+                    .Select(p => new PagamentosPorFormaResponseDTO(
+                        p.Id,
+                        p.Valor,
+                        p.DataPagamento,
+                        p.Status.ToString(),
+                        p.FormaPagamento.ToString(),
+                        p.AluguelId,
+                        p.Aluguel.DataInicio,
+                        p.Aluguel.DataTermino
+                    ))
+                    .ToListAsync();
+
+                return Ok(pagamentos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter pagamentos por forma {forma}.", forma);
+                return StatusCode(500, "Ocorreu um erro interno ao obter os pagamentos.");
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult<PagamentoResponseDTO>> CreateAsync([FromBody] PagamentoRequestDTO request)
         {

@@ -80,6 +80,73 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("por-fabricante/{id:long}")]
+        public async Task<ActionResult<IEnumerable<VeiculoResponseDTO>>> GetByFabricanteAsync(long id)
+        {
+            try
+            {
+                var fabricante = await _context.Fabricantes.FindAsync(id);
+
+                if (fabricante == null)
+                    return NotFound("Não foi encontrado o fabricante informado");
+
+                var veiculos = await _context.Veiculos
+                    .AsNoTracking()
+                    .Where(v => v.FabricanteId == id)
+                    .Select(v => new VeiculoResponseDTO(
+                        v.Id,
+                        v.Modelo,
+                        v.Ano,
+                        v.Quilometragem,
+                        v.Placa,
+                        v.Cor,
+                        v.Combustivel,
+                        v.Disponivel,
+                        new FabricanteResponseDTO(v.Fabricante.Id, v.Fabricante.Nome)
+                    ))
+                    .ToListAsync();
+
+                return Ok(veiculos);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter veículos do fabricante com id {Id}.", id);
+                return StatusCode(500, "Ocorreu um erro interno ao obter os veículos do fabricante informado.");
+            }
+        }
+
+        [HttpGet]
+        [Route("disponiveis")]
+        public async Task<ActionResult<IEnumerable<VeiculoResponseDTO>>> GetDisponiveisAsync()
+        {
+            try
+            {
+                var veiculos = await _context.Veiculos
+                    .AsNoTracking()
+                    .Where(v => v.Disponivel == true)
+                    .Select(v => new VeiculoResponseDTO(
+                        v.Id,
+                        v.Modelo,
+                        v.Ano,
+                        v.Quilometragem,
+                        v.Placa,
+                        v.Cor,
+                        v.Combustivel,
+                        v.Disponivel,
+                        new FabricanteResponseDTO(v.Fabricante.Id, v.Fabricante.Nome)
+                    ))
+                    .ToListAsync();
+
+                return Ok(veiculos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter veículos disponiveis");
+                return StatusCode(500, "Ocorreu um erro interno ao obter os veículos disponiveis.");
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult<VeiculoResponseDTO>> CreateAsync([FromBody] VeiculoRequestDTO request)
         {
