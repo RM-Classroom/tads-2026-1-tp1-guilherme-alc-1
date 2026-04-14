@@ -18,7 +18,15 @@ namespace TP1_TADS.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os fabricantes.
+        /// </summary>
+        /// <returns>Lista de fabricantes cadastrados.</returns>
+        /// <response code="200">Lista retornada com sucesso.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<FabricanteResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<FabricanteResponseDTO>>> GetAsync()
         {
             try
@@ -37,7 +45,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtém um fabricante pelo identificador.
+        /// </summary>
+        /// <param name="id">Identificador do fabricante.</param>
+        /// <returns>Os dados do fabricante encontrado.</returns>
+        /// <response code="200">Fabricante encontrado com sucesso.</response>
+        /// <response code="404">Fabricante não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet("{id:long}")]
+        [ProducesResponseType(typeof(FabricanteResponseDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<FabricanteResponseDTO>> GetByIdAsync(long id)
         {
             try
@@ -49,7 +68,7 @@ namespace TP1_TADS.Controllers
                     .FirstOrDefaultAsync();
 
                 if (fabricante == null)
-                    return NotFound($"Não foi encontrado o fabricante informado.");
+                    return NotFound($"Fabricante não encontrado.");
 
                 return Ok(fabricante);
             }
@@ -60,7 +79,20 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Cria um novo fabricante.
+        /// </summary>
+        /// <param name="request">Dados necessários para criação do fabricante.</param>
+        /// <returns>O fabricante criado.</returns>
+        /// <response code="201">Fabricante criado com sucesso.</response>
+        /// <response code="400">Os dados informados são inválidos.</response>
+        /// <response code="409">O fabricante já existe.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpPost]
+        [ProducesResponseType(typeof(FabricanteResponseDTO), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<FabricanteResponseDTO>> CreateAsync([FromBody] FabricanteRequestDTO request)
         {
             try
@@ -77,7 +109,7 @@ namespace TP1_TADS.Controllers
 
                 var fabricante = new Fabricante
                 {
-                    Nome = request.Nome.Trim()
+                    Nome = request.Nome
                 };
 
                 await _context.Fabricantes.AddAsync(fabricante);
@@ -95,7 +127,21 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Atualiza os dados de um fabricante existente.
+        /// </summary>
+        /// <param name="id">Identificador do fabricante.</param>
+        /// <param name="request">Novos dados do fabricante.</param>
+        /// <returns>Retorna sem conteúdo em caso de sucesso.</returns>
+        /// <response code="204">Fabricante atualizado com sucesso.</response>
+        /// <response code="404">Fabricante não encontrado.</response>
+        /// <response code="409">O fabricante já existe.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpPut("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateAsync(long id, [FromBody] FabricanteRequestDTO request)
         {
             try
@@ -103,7 +149,7 @@ namespace TP1_TADS.Controllers
                 var fabricante = await _context.Fabricantes.FindAsync(id);
 
                 if(fabricante == null)
-                    return NotFound($"Não foi encontrado o fabricante informado.");
+                    return NotFound($"Fabricante não encontrado.");
 
                 var nome = request.Nome.Trim().ToUpper();
                 var existeFabricante = await _context.Fabricantes
@@ -127,7 +173,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Remove um fabricante pelo identificador.
+        /// </summary>
+        /// <param name="id">Identificador do fabricante.</param>
+        /// <returns>Retorna sem conteúdo em caso de sucesso.</returns>
+        /// <response code="204">Fabricante removido com sucesso.</response>
+        /// <response code="404">Fabricante não encontrado.</response>
+        /// <response code="500">Erro interno no servidor.</response>
         [HttpDelete("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteAsync(long id)
         {
             try
@@ -135,7 +192,7 @@ namespace TP1_TADS.Controllers
                 var fabricante = await _context.Fabricantes.FindAsync(id);
 
                 if (fabricante == null)
-                    return NotFound($"Não foi encontrado o fabricante informado.");
+                    return NotFound($"Fabricante não encontrado.");
 
                 _context.Fabricantes.Remove(fabricante); 
                 await _context.SaveChangesAsync();

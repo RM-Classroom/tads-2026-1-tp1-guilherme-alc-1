@@ -19,7 +19,15 @@ namespace TP1_TADS.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os veículos.
+        /// </summary>
+        /// <returns>Lista de veículos cadastrados.</returns>
+        /// <response code="200">Lista retornada com sucesso.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<VeiculoResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<VeiculoResponseDTO>>> GetAsync()
         {
             try
@@ -47,7 +55,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtém um veículo pelo identificador.
+        /// </summary>
+        /// <param name="id">Identificador do veículo.</param>
+        /// <returns>Os dados do veículo encontrado.</returns>
+        /// <response code="200">Veículo encontrado com sucesso.</response>
+        /// <response code="404">Veículo não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet("{id:long}")]
+        [ProducesResponseType(typeof(VeiculoResponseDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<VeiculoResponseDTO>> GetByIdAsync(long id)
         {
             try
@@ -80,8 +99,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("por-fabricante/{id:long}")]
+        /// <summary>
+        /// Obtém os veículos de um fabricante específico.
+        /// </summary>
+        /// <param name="id">Identificador do fabricante.</param>
+        /// <returns>Lista de veículos do fabricante informado.</returns>
+        /// <response code="200">Veículos obtidos com sucesso.</response>
+        /// <response code="404">Fabricante não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
+        [HttpGet("por-fabricante/{id:long}")]
+        [ProducesResponseType(typeof(IEnumerable<VeiculoResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<VeiculoResponseDTO>>> GetByFabricanteAsync(long id)
         {
             try
@@ -116,8 +145,15 @@ namespace TP1_TADS.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("disponiveis")]
+        /// <summary>
+        /// Obtém a lista de veículos disponíveis para locação.
+        /// </summary>
+        /// <returns>Lista de veículos disponíveis.</returns>
+        /// <response code="200">Veículos obtidos com sucesso.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
+        [HttpGet("disponiveis")]
+        [ProducesResponseType(typeof(IEnumerable<VeiculoResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<VeiculoResponseDTO>>> GetDisponiveisAsync()
         {
             try
@@ -147,7 +183,22 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Cria um novo veículo.
+        /// </summary>
+        /// <param name="request">Dados necessários para criação do veículo.</param>
+        /// <returns>O veículo criado.</returns>
+        /// <response code="201">Veículo criado com sucesso.</response>
+        /// <response code="400">Os dados informados são inválidos.</response>
+        /// <response code="404">Fabricante não encontrado.</response>
+        /// <response code="409">Já existe um veículo com a placa informada.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpPost]
+        [ProducesResponseType(typeof(VeiculoResponseDTO), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<VeiculoResponseDTO>> CreateAsync([FromBody] VeiculoRequestDTO request)
         {
             try
@@ -203,7 +254,23 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Atualiza os dados de um veículo existente.
+        /// </summary>
+        /// <param name="id">Identificador do veículo.</param>
+        /// <param name="request">Novos dados do veículo.</param>
+        /// <returns>Retorna sem conteúdo em caso de sucesso.</returns>
+        /// <response code="204">Veículo atualizado com sucesso.</response>
+        /// <response code="400">Os dados informados são inválidos.</response>
+        /// <response code="404">Veículo ou fabricante não encontrado.</response>
+        /// <response code="409">Já existe outro veículo com a placa informada.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpPut("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateAsync(long id, [FromBody] VeiculoRequestDTO request)
         {
             try
@@ -248,7 +315,20 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Remove um veículo pelo identificador.
+        /// </summary>
+        /// <param name="id">Identificador do veículo.</param>
+        /// <returns>Retorna sem conteúdo em caso de sucesso.</returns>
+        /// <response code="204">Veículo removido com sucesso.</response>
+        /// <response code="400">Não é possível excluir o veículo porque ele possui aluguéis associados.</response>
+        /// <response code="404">Veículo não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpDelete("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> DeleteAsync(long id)
         {
             try
@@ -257,6 +337,10 @@ namespace TP1_TADS.Controllers
 
                 if (veiculo == null)
                     return NotFound($"Não foi encontrado o cadastro do veículo informado.");
+
+                var aluguelExists = await _context.Alugueis.AnyAsync(a => a.VeiculoId == id);
+                if (aluguelExists)
+                    return BadRequest("Não é possível excluir o veículo, pois ele possui aluguéis associados.");
 
                 _context.Veiculos.Remove(veiculo);
                 await _context.SaveChangesAsync();

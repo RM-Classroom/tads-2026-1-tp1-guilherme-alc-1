@@ -19,7 +19,15 @@ namespace TP1_TADS.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os aluguéis.
+        /// </summary>
+        /// <returns>Lista de aluguéis cadastrados.</returns>
+        /// <response code="200">Lista retornada com sucesso.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<AluguelResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<AluguelResponseDTO>>> GetAsync()
         {
             try
@@ -53,7 +61,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtém um aluguel pelo identificador.
+        /// </summary>
+        /// <param name="id">Identificador do aluguel.</param>
+        /// <returns>Os dados do aluguel encontrado.</returns>
+        /// <response code="200">Aluguel encontrado com sucesso.</response>
+        /// <response code="404">Aluguel não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet("{id:long}")]
+        [ProducesResponseType(typeof(AluguelResponseDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AluguelResponseDTO>> GetByIdAsync(long id)
         {
             try
@@ -91,15 +110,25 @@ namespace TP1_TADS.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("por-cliente/{id:long}")]
+        /// <summary>
+        /// Obtém os aluguéis de um cliente específico.
+        /// </summary>
+        /// <param name="id">Identificador do cliente.</param>
+        /// <returns>Lista de aluguéis vinculados ao cliente informado.</returns>
+        /// <response code="200">Aluguéis obtidos com sucesso.</response>
+        /// <response code="404">Cliente não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
+        [HttpGet("por-cliente/{id:long}")]
+        [ProducesResponseType(typeof(IEnumerable<AlugueisPorClienteResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<AlugueisPorClienteResponseDTO>>> GetByClienteAsync(long id)
         {
             try
             {
                 var cliente = await _context.Clientes.FindAsync(id);
                 if (cliente == null)
-                    return BadRequest("O cliente informado não foi encontado.");
+                    return NotFound("O cliente informado não foi encontado.");
 
                 var alugueis = await _context.Alugueis
                     .AsNoTracking()
@@ -147,7 +176,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtém os aluguéis filtrados por status.
+        /// </summary>
+        /// <param name="status">Status do aluguel utilizado no filtro.</param>
+        /// <returns>Lista de aluguéis com o status informado.</returns>
+        /// <response code="200">Aluguéis obtidos com sucesso.</response>
+        /// <response code="400">Status do aluguel inválido.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet("por-status")]
+        [ProducesResponseType(typeof(IEnumerable<AlugueisPorClienteResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<AlugueisPorClienteResponseDTO>>> GetByStatusAsync([FromQuery] StatusAluguel status)
         {
             try
@@ -199,7 +239,15 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtém um relatório consolidado dos aluguéis com dados de cliente, veículo e pagamento.
+        /// </summary>
+        /// <returns>Relatório de aluguéis.</returns>
+        /// <response code="200">Relatório obtido com sucesso.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet("relatorio")]
+        [ProducesResponseType(typeof(IEnumerable<AluguelRelatorioResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<AluguelRelatorioResponseDTO>>> GetRelatorioAsync()
         {
             try
@@ -232,7 +280,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Cria um novo aluguel.
+        /// </summary>
+        /// <param name="request">Dados necessários para criação do aluguel.</param>
+        /// <returns>O aluguel criado.</returns>
+        /// <response code="201">Aluguel criado com sucesso.</response>
+        /// <response code="400">Os dados informados são inválidos ou o veículo não está disponível.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpPost]
+        [ProducesResponseType(typeof(AluguelResponseDTO), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AluguelResponseDTO>> CreateAsync([FromBody] AluguelRequestDTO request)
         {
             try
@@ -294,7 +353,21 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Atualiza os dados de um aluguel existente.
+        /// </summary>
+        /// <param name="id">Identificador do aluguel.</param>
+        /// <param name="request">Novos dados do aluguel.</param>
+        /// <returns>Retorna sem conteúdo em caso de sucesso.</returns>
+        /// <response code="204">Aluguel atualizado com sucesso.</response>
+        /// <response code="400">Os dados informados são inválidos ou o veículo não está disponível.</response>
+        /// <response code="404">Aluguel não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpPut("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AluguelResponseDTO>> UpdateAsync(long id, [FromBody] AluguelRequestDTO request)
         {
             try
@@ -349,7 +422,20 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Remove um aluguel pelo identificador.
+        /// </summary>
+        /// <param name="id">Identificador do aluguel.</param>
+        /// <returns>Retorna sem conteúdo em caso de sucesso.</returns>
+        /// <response code="204">Aluguel removido com sucesso.</response>
+        /// <response code="400">Não é possível excluir o aluguel porque ele possui pagamento associado.</response>
+        /// <response code="404">Aluguel não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpDelete("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AluguelResponseDTO>> DeleteAsync(long id)
         {
             try

@@ -17,7 +17,15 @@ namespace TP1_TADS.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os clientes.
+        /// </summary>
+        /// <returns>Lista de clientes cadastrados.</returns>
+        /// <response code="200">Lista retornada com sucesso.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<ClienteResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<ClienteResponseDTO>>> GetAsync()
         {
             try
@@ -36,7 +44,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtém um cliente pelo identificador.
+        /// </summary>
+        /// <param name="id">Identificador do cliente.</param>
+        /// <returns>Os dados do cliente encontrado.</returns>
+        /// <response code="200">Cliente encontrado com sucesso.</response>
+        /// <response code="404">Cliente não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet("{id:long}")]
+        [ProducesResponseType(typeof(ClienteResponseDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ClienteResponseDTO>> GetByIdAsync(long id)
         {
             try
@@ -59,7 +78,20 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Cria um novo cliente.
+        /// </summary>
+        /// <param name="request">Dados necessários para criação do cliente.</param>
+        /// <returns>O cliente criado.</returns>
+        /// <response code="201">Cliente criado com sucesso.</response>
+        /// <response code="400">Os dados informados são inválidos.</response>
+        /// <response code="409">Já existe um cliente com o CPF informado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpPost]
+        [ProducesResponseType(typeof(ClienteResponseDTO), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ClienteResponseDTO>> CreateAsync([FromBody] ClienteRequestDTO request)
         {
             try
@@ -90,7 +122,21 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Atualiza os dados de um cliente existente.
+        /// </summary>
+        /// <param name="id">Identificador do cliente.</param>
+        /// <param name="request">Novos dados do cliente.</param>
+        /// <returns>Retorna sem conteúdo em caso de sucesso.</returns>
+        /// <response code="204">Cliente atualizado com sucesso.</response>
+        /// <response code="404">Cliente não encontrado.</response>
+        /// <response code="409">Já existe outro cliente com o CPF informado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpPut("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateAsync(long id, [FromBody] ClienteRequestDTO request)
         {
             try
@@ -118,7 +164,20 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Remove um cliente pelo identificador.
+        /// </summary>
+        /// <param name="id">Identificador do cliente.</param>
+        /// <returns>Retorna sem conteúdo em caso de sucesso.</returns>
+        /// <response code="204">Cliente removido com sucesso.</response>
+        /// <response code="400">Não é possível excluir o cliente porque ele possui aluguéis associados.</response>
+        /// <response code="404">Cliente não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpDelete("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteAsync(long id)
         {
             try

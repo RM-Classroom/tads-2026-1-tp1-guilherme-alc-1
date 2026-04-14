@@ -20,7 +20,15 @@ namespace TP1_TADS.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os pagamentos.
+        /// </summary>
+        /// <returns>Lista de pagamentos cadastrados.</returns>
+        /// <response code="200">Lista retornada com sucesso.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<PagamentoResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<PagamentoResponseDTO>>> GetAsync()
         {
             try
@@ -49,7 +57,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtém um pagamento pelo identificador.
+        /// </summary>
+        /// <param name="id">Identificador do pagamento.</param>
+        /// <returns>Os dados do pagamento encontrado.</returns>
+        /// <response code="200">Pagamento encontrado com sucesso.</response>
+        /// <response code="404">Pagamento não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet("{id:long}")]
+        [ProducesResponseType(typeof(PagamentoResponseDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PagamentoResponseDTO>> GetByIdAsync(long id)
         {
             try
@@ -81,7 +100,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtém os pagamentos filtrados pela forma de pagamento.
+        /// </summary>
+        /// <param name="forma">Forma de pagamento utilizada no filtro.</param>
+        /// <returns>Lista de pagamentos com a forma informada.</returns>
+        /// <response code="200">Pagamentos obtidos com sucesso.</response>
+        /// <response code="400">Forma de pagamento inválida.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpGet("por-forma")]
+        [ProducesResponseType(typeof(IEnumerable<PagamentosPorFormaResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<PagamentosPorFormaResponseDTO>>> GetByFormaAsync([FromQuery] FormaPagamento forma)
         {
             try
@@ -113,20 +143,35 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Cria um novo pagamento.
+        /// </summary>
+        /// <param name="request">Dados necessários para criação do pagamento.</param>
+        /// <returns>O pagamento criado.</returns>
+        /// <response code="201">Pagamento criado com sucesso.</response>
+        /// <response code="400">Os dados informados são inválidos.</response>
+        /// <response code="404">Aluguel não encontrado.</response>
+        /// <response code="409">Já existe pagamento associado ao aluguel informado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpPost]
+        [ProducesResponseType(typeof(PagamentoResponseDTO), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PagamentoResponseDTO>> CreateAsync([FromBody] PagamentoRequestDTO request)
         {
             try
             {
                 var aluguel = await _context.Alugueis.FindAsync(request.AluguelId);
                 if (aluguel == null)
-                    return BadRequest($"Aluguel não encontrado.");
+                    return NotFound($"Aluguel não encontrado.");
 
                 var pagamentoExiste = await _context.Pagamentos
                     .AnyAsync(p => p.AluguelId == request.AluguelId);
 
                 if (pagamentoExiste)
-                    return BadRequest("Já existe pagamento associado a este aluguel.");
+                    return Conflict("Já existe pagamento associado a este aluguel.");
 
                 if (!Enum.IsDefined(typeof(FormaPagamento), request.FormaPagamento))
                 {
@@ -179,7 +224,23 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Atualiza os dados de um pagamento existente.
+        /// </summary>
+        /// <param name="id">Identificador do pagamento.</param>
+        /// <param name="request">Novos dados do pagamento.</param>
+        /// <returns>Retorna sem conteúdo em caso de sucesso.</returns>
+        /// <response code="204">Pagamento atualizado com sucesso.</response>
+        /// <response code="400">Os dados informados são inválidos.</response>
+        /// <response code="404">Pagamento ou aluguel não encontrado.</response>
+        /// <response code="409">Já existe outro pagamento associado ao aluguel informado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpPut("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PagamentoResponseDTO>> UpdateAsync(long id, [FromBody] PagamentoRequestDTO request)
         {
             try
@@ -190,13 +251,13 @@ namespace TP1_TADS.Controllers
 
                 var aluguel = await _context.Alugueis.FindAsync(request.AluguelId);
                 if (aluguel == null)
-                    return BadRequest($"Aluguel não encontrado.");
+                    return NotFound($"Aluguel não encontrado.");
 
                 var pagamentoExiste = await _context.Pagamentos
                     .AnyAsync(p => p.AluguelId == request.AluguelId && p.Id != id);
 
                 if (pagamentoExiste)
-                    return BadRequest("Já existe pagamento associado a este aluguel.");
+                    return Conflict("Já existe pagamento associado a este aluguel.");
 
                 if (!Enum.IsDefined(typeof(FormaPagamento), request.FormaPagamento))
                 {
@@ -235,7 +296,18 @@ namespace TP1_TADS.Controllers
             }
         }
 
+        /// <summary>
+        /// Remove um pagamento pelo identificador.
+        /// </summary>
+        /// <param name="id">Identificador do pagamento.</param>
+        /// <returns>Retorna sem conteúdo em caso de sucesso.</returns>
+        /// <response code="204">Pagamento removido com sucesso.</response>
+        /// <response code="404">Pagamento não encontrado.</response>
+        /// <response code="500">Ocorreu um erro interno no servidor.</response>
         [HttpDelete("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteAsync(long id)
         {
             try
